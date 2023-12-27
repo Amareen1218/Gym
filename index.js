@@ -1,22 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-//const { MongoClient, ObjectId } = require('mongodb');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-
 const app = express();
 const port = 3000;
-//const MongoURI = 'mongodb+srv://amareen:4252621812-aA@cluster0.cihdsmn.mongodb.net/';
+const databaseName = 'GymFitnessManagement';
 
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-connectToMongoDB();
+//await connectToMongoDB();
 
 // MongoDB setup
-const {MongoClient} = require('mongodb');
-const MongoURI = 'mongodb+srv://amareen:4252621812-aA@cluster0.cihdsmn.mongodb.net/';
+const { MongoClient } = require('mongodb');
+const uri = 'mongodb+srv://amareen:4252621812-aA@cluster0.cihdsmn.mongodb.net/?retryWrites=true&w=majority';
 
 const options = {
   definition: {
@@ -44,11 +42,17 @@ async function connectToMongoDB() {
 let adminCollection;
 let hostCollectionName;
 
-const db = client.db('GymFitnessManagement');
+MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+.then(client => {
+  console.log('Connected to MongoDB'); 
+  const db = client.db('GymFitnessManagement');
   adminCollection = db.collection('adminCollection');
-  hostCollectionName = db.collection('hostCollectionName')
+  hostCollection = db.collection('hostCollectionName');
+});
 
-
+// const db = client.db('GymFitnessManagement');
+//   adminCollection = db.collection('adminCollection');
+//   hostCollectionName = db.collection('hostCollectionName');
 
 // Register new user
 async function registerUser(username, password, userType) {
