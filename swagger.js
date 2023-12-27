@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /registerUser:
+ * /register/user:
  *   post:
  *     tags:
  *       - User

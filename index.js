@@ -1,19 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ObjectId } = require('mongodb');
+//const { MongoClient, ObjectId } = require('mongodb');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const app = express();
-const port =  3000;
-const MongoURI = 'mongodb+srv://amareen:4252621812-aA@cluster0.cihdsmn.mongodb.net/'; 
+const port = 3000;
+//const MongoURI = 'mongodb+srv://amareen:4252621812-aA@cluster0.cihdsmn.mongodb.net/';
 
 app.use(express.json());
 app.use(cors());
 
+connectToMongoDB();
+
 // MongoDB setup
-const client = new MongoClient(MongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+const {MongoClient} = require('mongodb');
+const MongoURI = 'mongodb+srv://amareen:4252621812-aA@cluster0.cihdsmn.mongodb.net/';
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -40,45 +44,69 @@ async function connectToMongoDB() {
 let adminCollection;
 let hostCollectionName;
 
-const db = client.db('CondoVisitorManagement');
+const db = client.db('GymFitnessManagement');
   adminCollection = db.collection('adminCollection');
-  //visitDetailCollection = db.collection('visitDetailCollectionName');
-  //securityCollection = db.collection('securityCollectionName');
   hostCollectionName = db.collection('hostCollectionName')
 
 
 
-// Connect to MongoDB
-connectToMongoDB();
-
-
 // Register new user
 async function registerUser(username, password, userType) {
+  const client = new MongoClient(uri);
   try {
     if (!username || !password || !userType) {
       throw new Error('Missing required fields');
     }
 
-    const collection = userType === 'admin' ? adminCollection : hostCollectionName;
+    let matchuser = await hostCollection.findOne({ Username: reqUsername });
 
-    const existingUser = await collection.findOne({ username });
-    if (existingUser) {
+    if (!matchuser) {
       throw new Error('Username already exists');
     }
-
-    const newUser = {
-      username,
-      password,
-      userType,
-    };
-
-    await collection.insertOne(newUser);
-
-    return 'Registration successful';
+    if (matchuser.Password === reqPassword) {
+      return {
+        user: matchuser,
+      };
+    } else {
+      throw new Error('Invalid password');
+    }
   } catch (error) {
-    console.error('Error registering user:', error.message);
-    throw new Error('Registration failed');
+    console.error('Login Error:', error);
+    throw new Error('An error occurred during login.');
+  } finally {
+    await client.close();
   }
+}
+
+//Function Generate Token
+function generateToken(user) {
+  const payload = 
+  {
+    username: user.AdminUsername,
+  };
+  const token = jwt.sign
+  (
+    payload, 'inipassword', 
+    { expiresIn: '1h' }
+  );
+  return token;
+}
+
+//Function Verify
+function verifyToken(req, res, next) {
+  let header = req.headers.authorization;
+  console.log(header);
+
+  let token = header.split(' ')[1];
+
+  jwt.verify(token, 'inipassword', function (err, decoded) {
+    if (err) {
+      return res.status(401).send('Invalid Token');
+    }
+
+    req.user = decoded;
+    next();
+  });
 }
 
 // Express routes
@@ -121,7 +149,7 @@ async function deleteUser(username, userType) {
 }
 
 // Express route for deleting a user
-app.delete('/delete/user/:username/:userType', async (req, res) => {
+app.delete('/delete/user/:username/:userType',verifyToken, async (req, res) => {
   const { username, userType } = req.params;
   try {
     const result = await deleteUser(username, userType);
@@ -133,18 +161,19 @@ app.delete('/delete/user/:username/:userType', async (req, res) => {
 
 
 // Get all user details function
-async function getAllUsers(userType) {
-  try {
-    const collection = userType === 'admin' ? adminCollection : hostCollectionName;
+app.get('/visit-details',verifyToken, (req, res) => {
+  adminCollection
+    .find({})
+    .toArray()
+    .then((visitDetails) => {
+      res.json(visitDetails);
+    })
+    .catch((error) => {
+      console.error('Error retrieving visit details:', error);
+      res.status(500).send('An error occurred while retrieving visit details');
+    });
+});
 
-    const users = await collection.find({}).toArray();
-
-    return users;
-  } catch (error) {
-    console.error('Error getting all users:', error.message);
-    throw new Error('Failed to retrieve user details');
-  }
-}
 
 // Express route for getting all users
 app.get('/users/:userType', async (req, res) => {
@@ -194,29 +223,18 @@ app.post('/login', async (req, res) => {
 });
 
 // Admin login function
-async function loginAdmin(reqUsername, reqPassword) {
-  try {
-    if (!reqUsername || !reqPassword) {
-      throw new Error('Missing required fields');
-    }
+app.post('/login-Admin', (req, res) => {
+  console.log(req.body);
 
-    const adminUser = await adminCollection.findOne({ username: reqUsername });
-
-    if (!adminUser || adminUser.password !== reqPassword) {
-      throw new Error('Invalid credentials');
-    }
-
-    const token = generateToken(adminUser);
-
-    return {
-      message: 'Admin login successful',
-      token: token,
-    };
-  } catch (error) {
-    console.error('Admin Login Error:', error.message);
-    throw new Error('Admin login failed');
-  }
-}
+  Adminlogin(req.body.Username, req.body.Password)
+    .then((result) => {
+      let token = generateToken(result);
+      res.send(token);
+    })
+    .catch((error) => {
+      res.status(400).send(error.message);
+    });
+});
 
 // Express route for admin login
 app.post('/login/admin', async (req, res) => {
@@ -228,6 +246,16 @@ app.post('/login/admin', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+async function connectToMongo() {
+  try {
+    await client.connect();
+    console.log('Connected to MongoDB');
+    // Continue with your application logic or routes setup
+  } catch (err) {
+    console.error('Error connecting to MongoDB:', err);
+  }
+}
 
 
 // Start the server
