@@ -1,10 +1,10 @@
-POST  http://localhost:3000/login
+POST    http://localhost:3000/Userlogin
 Content-Type: application/json
-Authorization: Bearer 
+
 
 {
-    "Username": "Amareen",
-    "Password": "123"
+    "Username": "amaren",
+    "Password": "amaren"
 }
 ####
 
@@ -13,10 +13,10 @@ Content-Type: application/json
 Authorization: Bearer
 
 {
-    "Username": "test ",
-    "Password": "test",
-    "name":"teee",
-    "email":"teese@gmail.com"
+    "Username": "amaren",
+    "Password": "amaren",
+    "name":"teys",
+    "email":"adaw@gmail.com"
 }
 
 #############
@@ -38,17 +38,17 @@ Content-Type: application/json
 }
 
 #################################
-DELETE http://localhost:3000/delete-visit/6495cb0fcb296c6d8e49f3ad
+DELETE http://localhost:2000/delete-visit/6495cb0fcb296c6d8e49f3ad
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODc1NTMzODEsImV4cCI6MTY4NzU1Njk4MX0.Cgs-TRikGwAp6ykKjbiNOp8nmTKDYIHh_BgfDUP2Df4
 
 ############################################
-GET http://localhost:3000/visit-details
+GET http://localhost:2000/visit-details
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODc1NTQ4MDUsImV4cCI6MTY4NzU1ODQwNX0.lw7U2y9sQ0-U97Flx4ATegl74HSgKD62aKq-f1W7lHw
 
 ################
-PATCH http://localhost:3000/update-visit/6495cb0ccb296c6d8e49f3aa
+PATCH http://localhost:2000/update-visit/6495cb0ccb296c6d8e49f3aa
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODc1NTMzODEsImV4cCI6MTY4NzU1Njk4MX0.Cgs-TRikGwAp6ykKjbiNOp8nmTKDYIHh_BgfDUP2Df4
 
@@ -62,7 +62,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODc1NTMzO
 }
 
 #####################################
-POST http://localhost:3000/register-security
+POST http://localhost:2000/register-security
 Content-Type: application/json
 Authorization: Bearer 
 {
@@ -76,7 +76,7 @@ Authorization: Bearer
 }
 
 ####################
-POST  http://localhost:3000/login-security
+POST  http://localhost:2000/login-security
 Content-Type: application/json
 
 {
